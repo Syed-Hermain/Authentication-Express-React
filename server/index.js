@@ -3,6 +3,9 @@ import cors from 'cors';
 const app = express();
 import noteRoutes from './routes/notes.js';
 app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json());
+
+
 
 app.get("/", (req, res) => {
     res.send("Hello world!");
