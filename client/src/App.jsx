@@ -1,10 +1,13 @@
 import { useState } from "react";
 import "./App.css";
-import { getNotes, updateNote, deleteNote, createNote} from "./api/notesApi";
+import { getNotes, updateNote, deleteNote, createNote } from "./api/notesApi";
 import { useEffect } from "react";
 import Notes from "./components/Notes";
 import { Routes, Route } from "react-router";
 import NoteLayout from "./components/NoteLayout";
+import {AuthProvider} from "./context/AuthContext";
+import CheckAuth from "./components/checkAuth";
+import LoginPage from "./components/loginPage";
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -32,20 +35,38 @@ function App() {
   };
 
   useEffect(() => {
-    fetchNotes();
+    async function fetchData() {
+      await fetchNotes();
+    }
+    fetchData();
   }, []);
 
   return (
-    <Routes>
-      <Route element={<NoteLayout onCreate={newNote} />}>
-        <Route
-          path="/"
-          element={
-            <Notes notes={notes} onEdit={handleEdit} onDelete={handleDelete} />
-          }
-        />
-      </Route>
-    </Routes>
+    // Correct ✓
+    <AuthProvider>
+      <Routes>
+
+        <Route path="/login" element={<LoginPage />} />
+
+
+        <Route element={<CheckAuth />}>
+          <Route element={<NoteLayout onCreate={newNote} />}>
+            {" "}
+            {/* ← indented INSIDE CheckAuth */}
+            <Route
+              path="/"
+              element={
+                <Notes
+                  notes={notes}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              }
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
 

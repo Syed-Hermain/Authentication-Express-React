@@ -6,7 +6,6 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 
-
 app.get("/", (req, res) => {
     res.send("Hello world!");
 })

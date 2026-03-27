@@ -1,18 +1,15 @@
 import React from "react";
-import { data, Outlet } from "react-router";
+import { NavLink, Outlet } from "react-router";
 import { useState } from "react";
-
+import useAuth from "../context/useAuth";
 
 function NoteLayout({ onCreate }) {
-
-
-const [form, setForm] = useState({ title: "", content: "" });
+  const [form, setForm] = useState({ title: "", content: "" });
   const [dataId, setDataId] = useState(false);
- 
 
+  const {logout}  = useAuth();
   return (
     <>
-    
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -23,46 +20,55 @@ const [form, setForm] = useState({ title: "", content: "" });
 
             {/* Right side - Navigation links */}
             <div className="hidden md:flex items-center space-x-6">
-              <a
-                href="/"
+              <NavLink
+                to="/"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Home
-              </a>
-              <a
-                href="/notes"
+              </NavLink>
+              <NavLink
+                to="/notes"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Notes
-              </a>
-              <a
-                href="/about"
+              </NavLink>
+              <NavLink
+                to="/about"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 About
-              </a>
+              </NavLink>
 
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors" onClick={() => setDataId(true)}>
+              <button 
+                className="bg-yellow-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors"
+                onClick={() => logout() }
+                >
+                Logout
+              </button>
+
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                onClick={() => setDataId(true)}
+              >
                 New Note
               </button>
             </div>
-
           </div>
         </div>
       </nav>
 
-     {/* Page content */}
+      {/* Page content */}
 
-{dataId && (
+      {dataId && (
         <div className="fixed inset-0 flex items-center justify-center bg-blur bg-opacity-50 backdrop-blur-sm z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <h2 className="text-xl font-semibold mb-4">Create new Note</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-               // onEdit({ id: editingId, ...form }); // call your update API
-             
-             onCreate(form);
+                // onEdit({ id: editingId, ...form }); // call your update API
+
+                onCreate(form);
                 setForm({ title: "", content: "" });
                 setDataId(false);
               }}
@@ -74,7 +80,7 @@ const [form, setForm] = useState({ title: "", content: "" });
                 </label>
                 <input
                   type="text"
-                    value={form.title}
+                  value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="Write the title for you note here ..."
@@ -112,13 +118,12 @@ const [form, setForm] = useState({ title: "", content: "" });
             </form>
           </div>
         </div>
-    )}
-  <div className="max-w-4xl mx-auto px-6 py-10">  
-      <div className="p-6">
-        <Outlet />
+      )}
+      <div className="max-w-4xl mx-auto px-6 py-10">
+        <div className="p-6">
+          <Outlet />
+        </div>
       </div>
-    
-    </div>
     </>
   );
 }
