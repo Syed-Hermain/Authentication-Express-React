@@ -5,9 +5,11 @@ import { useEffect } from "react";
 import Notes from "./components/Notes";
 import { Routes, Route } from "react-router";
 import NoteLayout from "./components/NoteLayout";
-import {AuthProvider} from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import CheckAuth from "./components/checkAuth";
 import LoginPage from "./components/loginPage";
+import Userlayout from "./components/UserLayout";
+import Users from "./components/users";
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -45,9 +47,7 @@ function App() {
     // Correct ✓
     <AuthProvider>
       <Routes>
-
         <Route path="/login" element={<LoginPage />} />
-
 
         <Route element={<CheckAuth />}>
           <Route element={<NoteLayout onCreate={newNote} />}>
@@ -64,6 +64,12 @@ function App() {
               }
             />
           </Route>
+
+<Route element = {<Userlayout/>}>
+  <Route path = "/users" element = {<Users/>}/>
+</Route>
+
+
         </Route>
       </Routes>
     </AuthProvider>

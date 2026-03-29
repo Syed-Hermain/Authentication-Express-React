@@ -10,13 +10,5 @@ const pool = mysql.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
-export async function getNotes(){
-    const [rows] = await pool.query(`
-        SELECT * FROM notes
-        `)
-
-    return rows;
-}
-
 
 export default pool;

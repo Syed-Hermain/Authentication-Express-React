@@ -33,10 +33,10 @@ function NoteLayout({ onCreate }) {
                 Notes
               </NavLink>
               <NavLink
-                to="/about"
+                to="/users"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
-                About
+                Users
               </NavLink>
 
               <button 
