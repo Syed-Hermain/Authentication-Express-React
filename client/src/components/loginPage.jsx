@@ -1,29 +1,39 @@
 import { useState } from "react";
-import useAuth from "../context/useAuth";
-import { Navigate } from "react-router";
+import { useAuthStore } from "../store/useAuthStore";
+// import useAuth from "../context/useAuth";
+// import { Navigate } from "react-router";
 
 export default function LoginPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [signUp, setSignUp] = useState(false);
-  const { user, login } = useAuth();
+  const [signIn, setSignIn] = useState(false);
 
+  const { login, signup } = useAuthStore();
+  // const { user, login } = useAuth();
+  {/*
   if (user.isAuth) {
     return <Navigate to="/" />;
   }
-
+  */}
   function handleSubmit(e) {
+    if(signIn){
     e.preventDefault();
     console.log("Email:", email);
     console.log("Password:", password);
     // console.log("Remember Me:", rememberMe);
-    login(email);
+    login(email, password);} else{
+      e.preventDefault();
+      console.log("Email:", email);
+      console.log("Password:", password);
+      signup(name, email, password);
+    }
   }
 
   return (
     <div className="bg-gray-100 flex items-center justify-center min-h-screen">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        {signUp ? (
+        {signIn ? (
           <div>
             {/* Logo / Title */}
             <div className="text-center mb-6">
@@ -120,7 +130,7 @@ export default function LoginPage() {
             <p className="mt-6 text-center text-sm text-gray-600">
               Don't have an account?{" "}
               <button
-                onClick={() => setSignUp(!signUp)}
+                onClick={() => setSignIn(!signIn)}
                 className="text-indigo-600 hover:underline"
               >
                 SignUp
@@ -131,10 +141,26 @@ export default function LoginPage() {
           <div>
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
-              <p className="text-gray-500 text-sm">Sign up to continue</p>
+              <p className="text-gray-500 text-sm">SignUp to continue</p>
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
+               <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
               <div>
                 <label
                   htmlFor="email"
@@ -179,7 +205,7 @@ export default function LoginPage() {
 
             <button
               className="text-indigo-600 hover:underline"
-              onClick={() => setSignUp(!signUp)}
+              onClick={() => setSignIn(!signIn)}
             >
               Already have an account? Sign In
             </button>

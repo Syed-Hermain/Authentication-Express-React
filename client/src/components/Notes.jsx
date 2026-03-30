@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 //import { handleEdit } from "../App";
-import useAuth from "../context/useAuth";
+// import useAuth from "../context/useAuth";
 
 function Notes({ notes, onEdit, onDelete }) {
   const [form, setForm] = useState({ title: "", content: "" });
   const [editingId, setEditingId] = useState(null);
-  const {user} = useAuth();
+  // const {user} = useAuth();
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Notes</h1>
-      <h2>Welcome {user?.name}!</h2>
+      {/* <h2>Welcome {user?.name}!</h2> */}
 
       {editingId && (
         <div className="fixed inset-0 flex items-center justify-center bg-blur bg-opacity-50 backdrop-blur-sm z-50">

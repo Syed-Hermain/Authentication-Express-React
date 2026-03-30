@@ -1,13 +1,15 @@
-import React from "react";
+// import React from "react";
 import { NavLink, Outlet } from "react-router";
 import { useState } from "react";
-import useAuth from "../context/useAuth";
+import { useAuthStore } from "../store/useAuthStore";
+// import useAuth from "../context/useAuth";
 
 function NoteLayout({ onCreate }) {
   const [form, setForm] = useState({ title: "", content: "" });
   const [dataId, setDataId] = useState(false);
+  const { logout } = useAuthStore();
 
-  const {logout}  = useAuth();
+  // const {logout}  = useAuth();
   return (
     <>
       <nav className="bg-white shadow-md">
@@ -41,7 +43,7 @@ function NoteLayout({ onCreate }) {
 
               <button 
                 className="bg-yellow-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors"
-                onClick={() => logout() }
+                onClick={logout }
                 >
                 Logout
               </button>
