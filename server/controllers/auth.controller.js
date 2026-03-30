@@ -40,7 +40,7 @@ export const signup = async (req, res) => {
       "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
       [name, email, hashedPassword],
     );
-
+    /*
     const userId = result[0].insertId;
 
     generateToken(userId, res);
@@ -48,6 +48,8 @@ export const signup = async (req, res) => {
     res
       .status(201)
       .json({ id: userId, name, email });
+      */
+     res.status(201)
   } catch (err) {
     console.error(err); // ✅ log the actual error so you can see what's happening
     res.status(500).json({ message: "Server error" });

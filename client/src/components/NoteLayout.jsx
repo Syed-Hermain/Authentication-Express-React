@@ -28,12 +28,7 @@ function NoteLayout({ onCreate }) {
               >
                 Home
               </NavLink>
-              <NavLink
-                to="/notes"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                Notes
-              </NavLink>
+              
               <NavLink
                 to="/users"
                 className="text-gray-700 hover:text-blue-600 transition-colors"

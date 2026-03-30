@@ -27,6 +27,7 @@ export default function LoginPage() {
       console.log("Email:", email);
       console.log("Password:", password);
       signup(name, email, password);
+      setSignIn(true);
     }
   }
 
