@@ -1,15 +1,29 @@
-import React, { useState } from "react";
-//import { handleEdit } from "../App";
-// import useAuth from "../context/useAuth";
+import React, { useState, useEffect } from "react";
+import { deleteNote, updateNote } from "../api/notesApi";
+import { useOutletContext } from "react-router";
 
-function Notes({ notes, onEdit, onDelete }) {
+function Notes() {
   const [form, setForm] = useState({ title: "", content: "" });
   const [editingId, setEditingId] = useState(null);
-  // const {user} = useAuth();
+  const { notes, fetchNotes } = useOutletContext();
+
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const handleEdit = async (note) => {
+    await updateNote(note.id, { title: note.title, content: note.content });
+    await fetchNotes();
+  };
+
+  const handleDelete = async (id) => {
+    await deleteNote(id);
+    await fetchNotes();
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Notes</h1>
-      {/* <h2>Welcome {user?.name}!</h2> */}
 
       {editingId && (
         <div className="fixed inset-0 flex items-center justify-center bg-blur bg-opacity-50 backdrop-blur-sm z-50">
@@ -18,7 +32,7 @@ function Notes({ notes, onEdit, onDelete }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                onEdit({ id: editingId, ...form }); // call your update API
+                handleEdit({ id: editingId, ...form }); // call your update API
                 setEditingId(null);
                 setForm({ title: "", content: "" });
               }}
@@ -81,16 +95,16 @@ function Notes({ notes, onEdit, onDelete }) {
 
             <div className="flex justify-end space-x-3">
               <button
-                
-                onClick={() => {setEditingId(note.id),
-                    setForm({ title: note.title, content: note.content })
+                onClick={() => {
+                  (setEditingId(note.id),
+                    setForm({ title: note.title, content: note.content }));
                 }}
                 className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
               >
                 Edit
               </button>
               <button
-                onClick={() => onDelete(note.id)}
+                onClick={() => handleDelete(note.id)}
                 className="px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
               >
                 Delete

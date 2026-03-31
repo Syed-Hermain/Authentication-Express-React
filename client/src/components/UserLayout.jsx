@@ -1,10 +1,7 @@
-import {Outlet} from "react-router"
+import { Outlet } from "react-router";
 
-
-function Userlayout(){
-    return(
-<Outlet/>
-    )
+function Userlayout() {
+  return <Outlet />;
 }
 
-export default Userlayout
+export default Userlayout;

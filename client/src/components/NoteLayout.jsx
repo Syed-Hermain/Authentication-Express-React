@@ -1,15 +1,24 @@
-// import React from "react";
 import { NavLink, Outlet } from "react-router";
 import { useState } from "react";
+import { getNotes, createNote } from "../api/notesApi";
 import { useAuthStore } from "../store/useAuthStore";
-// import useAuth from "../context/useAuth";
 
-function NoteLayout({ onCreate }) {
+function NoteLayout() {
   const [form, setForm] = useState({ title: "", content: "" });
   const [dataId, setDataId] = useState(false);
   const { logout } = useAuthStore();
+  const [notes, setNotes] = useState([]);
 
-  // const {logout}  = useAuth();
+  const fetchNotes = async () => {
+    const { data } = await getNotes();
+    setNotes(data);
+  };
+
+  const newNote = async (note) => {
+    await createNote({ title: note.title, content: note.content });
+    await fetchNotes();
+  };
+
   return (
     <>
       <nav className="bg-white shadow-md">
@@ -65,7 +74,7 @@ function NoteLayout({ onCreate }) {
                 e.preventDefault();
                 // onEdit({ id: editingId, ...form }); // call your update API
 
-                onCreate(form);
+                newNote(form);
                 setForm({ title: "", content: "" });
                 setDataId(false);
               }}
@@ -118,7 +127,7 @@ function NoteLayout({ onCreate }) {
       )}
       <div className="max-w-4xl mx-auto px-6 py-10">
         <div className="p-6">
-          <Outlet />
+          <Outlet context = {{ notes: notes, fetchNotes: fetchNotes }} />
         </div>
       </div>
     </>

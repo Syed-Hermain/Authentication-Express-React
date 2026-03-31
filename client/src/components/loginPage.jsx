@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-// import useAuth from "../context/useAuth";
-// import { Navigate } from "react-router";
 
 export default function LoginPage() {
   const [name, setName] = useState("");
@@ -10,19 +8,15 @@ export default function LoginPage() {
   const [signIn, setSignIn] = useState(false);
 
   const { login, signup } = useAuthStore();
-  // const { user, login } = useAuth();
-  {/*
-  if (user.isAuth) {
-    return <Navigate to="/" />;
-  }
-  */}
+
   function handleSubmit(e) {
-    if(signIn){
-    e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
-    // console.log("Remember Me:", rememberMe);
-    login(email, password);} else{
+    if (signIn) {
+      e.preventDefault();
+      console.log("Email:", email);
+      console.log("Password:", password);
+
+      login(email, password);
+    } else {
       e.preventDefault();
       console.log("Email:", email);
       console.log("Password:", password);
@@ -146,7 +140,7 @@ export default function LoginPage() {
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
-               <div>
+              <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"

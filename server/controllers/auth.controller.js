@@ -5,8 +5,8 @@ import cloudinary from "../lib/cloudinary.js";
 
 
 export const checkAuth = async( req, res) =>{
-  const { id, name, email } = req.user;
-  res.json({ id, name, email });
+  const { id, name, email, role } = req.user;
+  res.json({ id, name, email, role });
 }
 
 
@@ -37,8 +37,8 @@ export const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const result = await pool.query(
-      "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-      [name, email, hashedPassword],
+      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+      [name, email, hashedPassword, "user"],
     );
     /*
     const userId = result[0].insertId;
@@ -78,7 +78,7 @@ export const login = async (req, res) => {
 
     // If we get here, the user is authenticated
     // You can generate a token or perform other actions here
-    generateToken(rows[0].id, res);
+    generateToken(rows[0].id, rows[0].role, res);
     res
       .status(201)
       .json({ id: rows[0].id, name: rows[0].name, email: rows[0].email });

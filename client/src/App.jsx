@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import "./App.css";
-import { getNotes, updateNote, deleteNote, createNote } from "./api/notesApi";
+// import { getNotes, updateNote, deleteNote, createNote } from "./api/notesApi";
 // import { useEffect } from "react";
 import Notes from "./components/Notes";
 import { Navigate, Routes, Route } from "react-router";
@@ -11,50 +11,19 @@ import LoginPage from "./components/loginPage";
 import Userlayout from "./components/UserLayout";
 import Users from "./components/users";
 import { useAuthStore } from "./store/useAuthStore";
+import AdminRoute from "./components/AdminRoute";
+import AdminLayout from "./components/AdminLayout";
 
 function App() {
-  const [notes, setNotes] = useState([]);
-  //const [form, setForm] = useState({title:'', content:''});
-  //const [editingId, setEditingId] = useState(null);
-
-  const fetchNotes = async () => {
-    const { data } = await getNotes();
-    setNotes(data);
-  };
-
-  const newNote = async (note) => {
-    await createNote({ title: note.title, content: note.content });
-    await fetchNotes();
-  };
-
-  const handleDelete = async (id) => {
-    await deleteNote(id);
-    await fetchNotes();
-  };
-
-  const handleEdit = async (note) => {
-    await updateNote(note.id, { title: note.title, content: note.content });
-    await fetchNotes();
-  };
-
-  useEffect(() => {
-    async function fetchData() {
-      await fetchNotes();
-    }
-    fetchData();
-  }, []);
-
   const { authUser, checkAuth } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []);
 
-  console.log("Authenticated User:", authUser);
+  console.log("Authenticated User in the client side is :", authUser);
 
   return (
-    // Correct ✓
-
     <Routes>
       <Route
         path="/login"
@@ -62,22 +31,22 @@ function App() {
       />
 
       <Route element={<ProtectedRoute />}>
-        <Route element={<NoteLayout onCreate={newNote} />}>
-          <Route
-            path="/"
-            element={
-              <Notes
-                notes={notes}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            }
-          />
+        <Route element={<NoteLayout />}>
+          <Route path="/" element={<Notes />} />
         </Route>
 
         <Route element={<Userlayout />}>
           <Route path="/users" element={<Users />} />
         </Route>
+
+        <Route element={<AdminRoute />}>
+          {/* Admin-only routes can go here */}
+          <Route element  = {<AdminLayout />}>
+            {/* Example admin route */}
+            <Route path="/admin" element={<div>Admin Dashboard</div>} />
+          </Route>
+        </Route>  
+
       </Route>
     </Routes>
   );
