@@ -2,7 +2,8 @@ import pool from "../lib/database.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const checkAuth = async( req, res) =>{
   const { id, name, email, role } = req.user;
@@ -94,17 +95,38 @@ export const logout = (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  try{
-    const {profilePicture} = req.body;
-    
-    if(!profilePicture){
-      return res.status(400).json({message: "Profile picture is required"});
+  try {
+    const { profilePicture } = req.body; // "users/user_1"
+
+    if (!profilePicture) {
+      return res.status(400).json({ message: "Profile picture is required" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePicture)
+    await pool.query('UPDATE users SET profile_pic = ? WHERE id = ?',
+      [profilePicture, req.user.id]
+    );
 
-  } catch(error){
-    // console.error(error); 
-    res.status(500).json({message: "Server error"});
+    res.json({ message: "Profile updated successfully", profilePicture });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server error" });
   }
 }
+
+export const getSignedUrl = async (req, res) => {
+  const timestamp = Math.round((new Date()).getTime() / 1000);
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp: timestamp, folder: "users", public_id: `user_${req.user.id}`, },
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  res.json({
+    timestamp,
+    signature,
+    folder: "users",
+    public_id: `user_${req.user.id}`,
+    cloudname: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY
+  });
+};

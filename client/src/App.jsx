@@ -9,10 +9,11 @@ import NoteLayout from "./components/NoteLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./components/loginPage";
 import Userlayout from "./components/UserLayout";
-import Users from "./components/users";
+// import Users from "./components/users";
 import { useAuthStore } from "./store/useAuthStore";
 import AdminRoute from "./components/AdminRoute";
 import AdminLayout from "./components/AdminLayout";
+import ProfilePage from "./components/ProfilePage";
 
 function App() {
   const { authUser, checkAuth } = useAuthStore();
@@ -36,7 +37,7 @@ function App() {
         </Route>
 
         <Route element={<Userlayout />}>
-          <Route path="/users" element={<Users />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         <Route element={<AdminRoute />}>
