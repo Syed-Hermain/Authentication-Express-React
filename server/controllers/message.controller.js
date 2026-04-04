@@ -5,27 +5,40 @@ export const getUsersForSidebar = async (req, res) => {
     try {
         const loggedInUserId = req.user.id;
         const [rows] = await pool.query(`
-            SELECT 
-                u.id, 
-                u.name, 
-                u.profile_pic,
-                m.text AS last_message,
-                m.created_at AS last_message_time,
-                SUM(CASE WHEN m.is_read = FALSE AND m.receiver_id = ? THEN 1 ELSE 0 END) AS unread_count
-            FROM users u
-            JOIN messages m ON (
-                (m.sender_id = ? AND m.receiver_id = u.id) OR 
-                (m.sender_id = u.id AND m.receiver_id = ?)
-            )
-            WHERE u.id != ?
-              AND m.created_at = (
-                SELECT MAX(m2.created_at) FROM messages m2
-                WHERE (m2.sender_id = ? AND m2.receiver_id = u.id) 
-                   OR (m2.sender_id = u.id AND m2.receiver_id = ?)
-              )
-            GROUP BY u.id, u.name, u.profile_pic, m.text, m.created_at
-            ORDER BY m.created_at DESC
-        `, [loggedInUserId, loggedInUserId, loggedInUserId, loggedInUserId, loggedInUserId, loggedInUserId]);
+    SELECT 
+        u.id,
+        u.name,
+        u.profile_pic,
+        latest.text AS last_message,
+        latest.created_at AS last_message_time,
+        COUNT(CASE WHEN m.is_read = FALSE AND m.receiver_id = ? THEN 1 END) AS unread_count
+    FROM users u
+    INNER JOIN (
+        SELECT 
+            CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS other_user_id,
+            text,
+            created_at,
+            ROW_NUMBER() OVER (
+                PARTITION BY CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END
+                ORDER BY created_at DESC
+            ) AS rn
+        FROM messages
+        WHERE sender_id = ? OR receiver_id = ?
+    ) AS latest ON latest.other_user_id = u.id AND latest.rn = 1
+    LEFT JOIN messages m ON (
+        (m.sender_id = ? AND m.receiver_id = u.id) OR
+        (m.sender_id = u.id AND m.receiver_id = ?)
+    ) AND m.is_read = FALSE AND m.receiver_id = ?
+    WHERE u.id != ?
+    GROUP BY u.id, u.name, u.profile_pic, latest.text, latest.created_at
+    ORDER BY latest.created_at DESC
+`, [
+    loggedInUserId,
+    loggedInUserId, loggedInUserId,
+    loggedInUserId, loggedInUserId,
+    loggedInUserId, loggedInUserId, loggedInUserId,
+    loggedInUserId
+]);
 
         res.json(rows);
     } catch (error) {

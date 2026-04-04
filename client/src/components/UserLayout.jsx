@@ -41,7 +41,7 @@ function Userlayout() {
                 About
               </NavLink>
               <NavLink
-                to="/services"
+                to="/chat"
                 className={({ isActive }) =>
                   `px-3 py-2 rounded-md text-sm font-medium ${
                     isActive
@@ -50,7 +50,7 @@ function Userlayout() {
                   }`
                 }
               >
-                Services
+                Chat
               </NavLink>
               <NavLink
                 to="/contact"

@@ -14,6 +14,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import AdminRoute from "./components/AdminRoute";
 import AdminLayout from "./components/AdminLayout";
 import ProfilePage from "./components/ProfilePage";
+import ChatPage from "./components/ChatPage";
 
 function App() {
   const { authUser, checkAuth } = useAuthStore();
@@ -38,6 +39,7 @@ function App() {
 
         <Route element={<Userlayout />}>
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Route>
 
         <Route element={<AdminRoute />}>
