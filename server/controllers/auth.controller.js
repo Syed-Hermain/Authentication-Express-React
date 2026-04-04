@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const checkAuth = async( req, res) =>{
-  const { id, name, email, role } = req.user;
-  res.json({ id, name, email, role });
+  const { id, name, email, role, profile_pic } = req.user;
+  res.json({ id, name, email, role, profile_pic });
 }
 
 
@@ -82,7 +82,7 @@ export const login = async (req, res) => {
     generateToken(rows[0].id, rows[0].role, res);
     res
       .status(201)
-      .json({ id: rows[0].id, name: rows[0].name, email: rows[0].email });
+      .json({ id: rows[0].id, name: rows[0].name, email: rows[0].email, role: rows[0].role, profile_pic: rows[0].profile_pic });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { api } from "../api/notesApi";
 import {
@@ -11,6 +11,7 @@ import {
   Calendar,
   Shield,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function ProfilePage() {
   const [profilePic, setProfilePic] = useState(
@@ -62,21 +63,32 @@ export default function ProfilePage() {
     }
   };
 
+  const { authUser} = useAuthStore();
+
+  useEffect(() => {
+    console.log("profile_pic after this is :", authUser?.profile_pic);
+  }, [authUser]);
+
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Header/Banner Area */}
-        <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
+    <div className="min-h-screen bg-gray-900 p-4 md:p-8 text-gray-100">
+      <div className="max-w-5xl mx-auto bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+        {/* Header Banner */}
+        <div className="h-40 bg-gradient-to-r from-red-600 to-black"></div>
 
         <div className="px-8 pb-8">
-          <div className="relative flex flex-col md:flex-row md:items-end -mt-12 mb-6 gap-6">
-            {/* Profile Picture Upload Section */}
+          <div className="relative flex flex-col md:flex-row md:items-end -mt-16 mb-8 gap-6">
+            {/* Profile Picture */}
             <div className="relative group mx-auto md:mx-0">
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-200">
+              <div className="w-32 h-32 rounded-full border-4 border-gray-900 shadow-lg overflow-hidden bg-gray-700">
                 <img
-                  src={profilePic}
+                  src={authUser?.profile_pic || profilePic}
                   alt="profile"
-                  className={`w-full h-full object-cover transition-opacity ${isUploading ? "opacity-50" : "opacity-100"}`}
+                  onError={(e) => {
+                    e.target.src = profilePic;
+                  }}
+                  className={`w-full h-full object-cover transition-opacity ${
+                    isUploading ? "opacity-50" : "opacity-100"
+                  }`}
                 />
               </div>
 
@@ -84,7 +96,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => fileInputRef.current.click()}
                 disabled={isUploading}
-                className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
               >
                 {isUploading ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
@@ -106,66 +118,68 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Name and Basic Info */}
+            {/* Name and Info */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-gray-900">Jane Smith</h1>
-              <p className="text-blue-600 font-medium">Senior Manager</p>
+              <h1 className="text-3xl font-bold text-white">
+                {authUser?.name}
+              </h1>
+              <p className="text-red-400 font-medium">Senior Manager</p>
             </div>
 
             <div className="flex gap-2">
-              <button className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+              <button className="px-5 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm">
                 Edit Profile
               </button>
             </div>
           </div>
 
-          <hr className="border-gray-100 my-8" />
+          <hr className="border-gray-700 my-8" />
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h2 className="text-sm font-uppercase tracking-wider text-gray-400 font-bold mb-4 flex items-center gap-2">
+              <h2 className="text-sm tracking-wider text-gray-400 font-bold mb-4">
                 CONTACT INFORMATION
               </h2>
               <ul className="space-y-4">
-                <li className="flex items-center text-gray-600 gap-3">
-                  <Mail className="w-4 h-4 text-gray-400" />{" "}
+                <li className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-gray-500" />{" "}
                   jane.smith@company.com
                 </li>
-                <li className="flex items-center text-gray-600 gap-3">
-                  <Phone className="w-4 h-4 text-gray-400" /> +91 9876543210
+                <li className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-gray-500" /> +91 9876543210
                 </li>
-                <li className="flex items-center text-gray-600 gap-3">
-                  <MapPin className="w-4 h-4 text-gray-400" /> New Delhi, India
+                <li className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-gray-500" /> New Delhi, India
                 </li>
-                <li className="flex items-center text-gray-600 gap-3">
-                  <Globe className="w-4 h-4 text-gray-400" /> www.company.com
+                <li className="flex items-center gap-3">
+                  <Globe className="w-4 h-4 text-gray-500" /> www.company.com
                 </li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-sm font-uppercase tracking-wider text-gray-400 font-bold mb-4 flex items-center gap-2">
+              <h2 className="text-sm tracking-wider text-gray-400 font-bold mb-4">
                 ACCOUNT DETAILS
               </h2>
-              <div className="bg-gray-50 rounded-xl p-5 space-y-4">
+              <div className="bg-gray-700 rounded-xl p-5 space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm flex items-center gap-2">
+                  <span className="text-gray-400 text-sm flex items-center gap-2">
                     <Shield className="w-4 h-4" /> Role
                   </span>
-                  <span className="font-semibold text-gray-700">Manager</span>
+                  <span className="font-semibold text-gray-200">Manager</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Status</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                  <span className="text-gray-400 text-sm">Status</span>
+                  <span className="px-2 py-1 bg-green-700 text-green-100 text-xs font-bold rounded-full">
                     ACTIVE
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm flex items-center gap-2">
+                  <span className="text-gray-400 text-sm flex items-center gap-2">
                     <Calendar className="w-4 h-4" /> Joined
                   </span>
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-gray-200">
                     Jan 15, 2024
                   </span>
                 </div>
@@ -175,7 +189,7 @@ export default function ProfilePage() {
 
           {/* Activity Section */}
           <div className="mt-12">
-            <h2 className="text-sm font-uppercase tracking-wider text-gray-400 font-bold mb-6">
+            <h2 className="text-sm tracking-wider text-gray-400 font-bold mb-6">
               RECENT ACTIVITY
             </h2>
             <div className="space-y-3">
@@ -186,12 +200,12 @@ export default function ProfilePage() {
               ].map((activity, idx) => (
                 <div
                   key={idx}
-                  className="group p-4 border border-gray-100 rounded-xl hover:border-blue-200 hover:bg-blue-50 transition-all cursor-default"
+                  className="group p-4 border border-gray-700 rounded-xl hover:border-red-500 hover:bg-gray-700 transition-all cursor-default"
                 >
-                  <p className="text-gray-800 font-semibold group-hover:text-blue-700 transition-colors">
+                  <p className="text-gray-200 font-semibold group-hover:text-red-400 transition-colors">
                     {activity.title}
                   </p>
-                  <p className="text-gray-400 text-sm uppercase tracking-tighter mt-1">
+                  <p className="text-gray-500 text-sm uppercase tracking-tighter mt-1">
                     {activity.date}
                   </p>
                 </div>

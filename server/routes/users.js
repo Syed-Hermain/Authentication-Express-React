@@ -36,4 +36,6 @@ router.get("/get-signed-url", protectRoute, getSignedUrl);
 
 router.get("/admin", protectRoute, requireRole("admin"), getAllUsers);
 
+
+
 export default router;
