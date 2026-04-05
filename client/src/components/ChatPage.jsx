@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore";
+// import { getUsers } from "../api/notesApi";
+import { useAuthStore } from "../store/useAuthStore";
 
 function ChatPage() {
-  const { selectedUser, getUsers, getMessages } = useChatStore();
+  const { selectedUser,getUsers, getMessages } = useChatStore();
+  // const { authUser } = useAuthStore();
 
+  
   useEffect(() => {
     getUsers();
   }, []); // ✅ empty array — only runs once on mount
@@ -23,79 +27,153 @@ function ChatPage() {
 }
 
 function Sidebar() {
+  const { chatUsers, searchResults, selectedUser, setSelectedUser, isUsersLoading, searchUsers } = useChatStore();
+  const { authUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
-  const { users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
+  const [isSearching, setIsSearching] = useState(false);
 
-  const filteredUsers = (users || []).filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const delay = setTimeout(async () => {
+      if (searchTerm.trim() === "") {
+        setIsSearching(false);
+      } else {
+        setIsSearching(true);
+        await searchUsers(searchTerm.trim());
+      }
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
+
+  // Split search results into — already chatting vs new users
+  const alreadyChattingIds = new Set(chatUsers.map(u => u.id));
+  const newUsers = searchResults.filter(u => !alreadyChattingIds.has(u.id));
+  const matchedChatUsers = searchResults.filter(u => alreadyChattingIds.has(u.id));
 
   return (
-    <aside className="w-72 bg-gray-900 border-r border-gray-800 flex flex-col">
-      <div className="p-4 border-b border-gray-800">
-        <input
-          type="text"
-          placeholder="Search users..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 rounded-md bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-        />
+    <aside className="w-72 flex flex-col bg-[#1a1a2e] border-r border-white/10 flex-shrink-0">
+
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-white/10">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative">
+            <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-sm font-medium overflow-hidden">
+              {authUser?.profile_pic
+                ? <img src={authUser.profile_pic} className="w-full h-full object-cover" onError={(e) => e.target.style.display="none"} />
+                : authUser?.name?.charAt(0).toUpperCase()
+              }
+            </div>
+            <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full ring-1 ring-[#1a1a2e]" />
+          </div>
+          <span className="text-sm font-medium text-gray-200 truncate">{authUser?.name}</span>
+        </div>
+
+        {/* Search input */}
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search or start new chat"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-8 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {isUsersLoading ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p>Loading users...</p>
-          </div>
-        ) : filteredUsers.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">No users found</div>
+          <div className="flex items-center justify-center h-32 text-gray-500 text-sm">Loading...</div>
+        ) : !isSearching ? (
+          // ── Normal mode: chat history only ──
+          <>
+            <SectionLabel label="Recent" />
+            {chatUsers.length === 0
+              ? <div className="text-center text-gray-500 text-sm py-8">No conversations yet</div>
+              : chatUsers.map(user => <UserRow key={user.id} user={user} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />)
+            }
+          </>
         ) : (
-          <ul>
-            {filteredUsers.map((user) => (
-              <li
-                key={user.id}
-                onClick={() => setSelectedUser(user)}
-                className={`px-4 py-3 cursor-pointer transition-colors ${
-                  selectedUser?.id === user.id
-                    ? "bg-red-600 text-white"
-                    : "hover:bg-gray-800 text-gray-300"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0 flex items-center justify-center">
-                    {user.profile_pic ? (
-                      <img
-                        src={user.profile_pic}
-                        alt={user.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                      />
-                    ) : (
-                      <span className="text-sm font-bold text-yellow-400">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+          // ── Search mode: split into two sections ──
+          <>
+            {matchedChatUsers.length > 0 && (
+              <>
+                <SectionLabel label="Recent chats" />
+                {matchedChatUsers.map(user => <UserRow key={user.id} user={user} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />)}
+              </>
+            )}
 
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-medium">{user.name}</p>
-                    {user.last_message && (
-                      <p className="text-xs text-gray-400 truncate">{user.last_message}</p>
-                    )}
-                  </div>
+            {newUsers.length > 0 && (
+              <>
+                <SectionLabel label="All users" />
+                {newUsers.map(user => <UserRow key={user.id} user={user} selectedUser={selectedUser} setSelectedUser={setSelectedUser} />)}
+              </>
+            )}
 
-                  {user.unread_count > 0 && (
-                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      {user.unread_count}
-                    </span>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+            {matchedChatUsers.length === 0 && newUsers.length === 0 && (
+              <div className="text-center text-gray-500 text-sm py-8">No users found</div>
+            )}
+          </>
         )}
       </div>
     </aside>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────
+
+function SectionLabel({ label }) {
+  return (
+    <div className="px-4 pt-3 pb-1">
+      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-widest">{label}</span>
+    </div>
+  );
+}
+
+function UserRow({ user, selectedUser, setSelectedUser }) {
+  return (
+    <div
+      onClick={() => setSelectedUser(user)}
+      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-l-2 ${
+        selectedUser?.id === user.id
+          ? "bg-red-600/15 border-red-500"
+          : "border-transparent hover:bg-white/5"
+      }`}
+    >
+      <div className="w-9 h-9 rounded-full bg-gray-600 flex items-center justify-center text-sm font-medium flex-shrink-0 overflow-hidden">
+        {user.profile_pic
+          ? <img src={user.profile_pic} className="w-full h-full object-cover" onError={(e) => e.target.style.display="none"} />
+          : user.name?.charAt(0).toUpperCase()
+        }
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center">
+          <p className="text-sm font-medium text-gray-200 truncate">{user.name}</p>
+          {user.last_message_time && (
+            <span className="text-[11px] text-gray-500 ml-2 flex-shrink-0">
+              {new Date(user.last_message_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
+        {user.last_message
+          ? <p className="text-xs text-gray-500 truncate mt-0.5">{user.last_message}</p>
+          : <p className="text-xs text-gray-600 mt-0.5">No messages yet</p>
+        }
+      </div>
+
+      {user.unread_count > 0 && (
+        <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center flex-shrink-0">
+          {user.unread_count}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -228,5 +306,6 @@ function NoChatSelected() {
     </div>
   );
 }
+
 
 export default ChatPage;

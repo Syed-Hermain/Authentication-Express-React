@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 // import axios from 'axios';
 import { api } from '../api/notesApi';
+// import { searchUsers } from '../../../server/controllers/message.controller
 // import toast from 'react-hot-toast';
 
 export const useChatStore = create((set, get) => ({
     messages: [],
     users: [],
+    chatUsers:[],
+    searchResults:[],
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
@@ -14,7 +17,7 @@ export const useChatStore = create((set, get) => ({
         set({ isUsersLoading: true });
         try {
            const res = await api.get('/messages/users');
-            set({ users: res.data });                    // ✅ res.data not res.json()
+            set({ users: res.data, chatUsers: res.data });                    // ✅ res.data not res.json()
         } catch (error) {
             console.error('Failed to fetch users:', error);
         } finally {
@@ -43,6 +46,16 @@ export const useChatStore = create((set, get) => ({
             console.error('Failed to send message:', error);
         }
     },
+
+    searchUsers: async (query) => {
+        try {
+            const res = await api.get(`/messages/search?query=${encodeURIComponent(query)}`);
+            set({ searchResults: res.data });
+        } catch (error) {
+            console.error('Failed to search users:', error);
+        }
+    },
+
 
     setSelectedUser: (selectedUser) => set({ selectedUser })
 }));
