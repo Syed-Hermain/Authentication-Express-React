@@ -17,7 +17,10 @@ import ProfilePage from "./components/ProfilePage";
 import ChatPage from "./components/ChatPage";
 
 function App() {
-  const { authUser, checkAuth } = useAuthStore();
+  const { authUser, checkAuth, onlineUsers } = useAuthStore();
+
+  // const test = onlineUsers.map(Number).includes(authUser?.id)
+  console.log("Online users:",onlineUsers);
 
   useEffect(() => {
     checkAuth();

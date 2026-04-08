@@ -4,16 +4,22 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
 function ChatPage() {
-  const { selectedUser,getUsers, getMessages } = useChatStore();
+  const { selectedUser,getUsers, getMessages, subscribeToMessages, unsubscribeFromMessages } = useChatStore();
   // const { authUser } = useAuthStore();
 
-  
+  // console.log("The messages is:", getMessages);
+
   useEffect(() => {
     getUsers();
   }, []); // ✅ empty array — only runs once on mount
 
   useEffect(() => {
-    if (selectedUser) getMessages(selectedUser.id);
+    if (selectedUser) {
+      getMessages(selectedUser.id);
+      subscribeToMessages();
+    }
+
+    return () => unsubscribeFromMessages();
   }, [selectedUser]); // ✅ only re-runs when selectedUser changes
 
   return (
@@ -31,7 +37,7 @@ function Sidebar() {
   const { authUser } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-
+  
   useEffect(() => {
     const delay = setTimeout(async () => {
       if (searchTerm.trim() === "") {
@@ -180,11 +186,25 @@ function UserRow({ user, selectedUser, setSelectedUser }) {
 function ChatContainer() {
   const [newMessage, setNewMessage] = useState("");
   const { messages, selectedUser, isMessagesLoading, sendMessage } = useChatStore();
+  const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  console.log("Messages in container is:", messages);
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const isMine = (msg) => {
+    return String(msg.sender_id) === String(authUser?.id);
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -232,9 +252,9 @@ function ChatContainer() {
           messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
+              className={`flex ${isMine(msg) ? "justify-end" : "justify-start"}`}
             >
-              {msg.sender !== "me" && (
+              {!isMine(msg) && (
                 <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-700 mr-2 flex-shrink-0 self-end flex items-center justify-center">
                   {selectedUser.profile_pic ? (
                     <img src={selectedUser.profile_pic} alt="" className="w-full h-full object-cover" />
@@ -248,7 +268,7 @@ function ChatContainer() {
 
               <div
                 className={`max-w-xs px-4 py-2 rounded-lg text-sm shadow-md ${
-                  msg.sender === "me"
+                  isMine(msg)
                     ? "bg-red-600 text-white rounded-br-none"
                     : "bg-gray-800 text-gray-200 rounded-bl-none"
                 }`}
@@ -263,10 +283,7 @@ function ChatContainer() {
                 )}
                 {msg.text && <p>{msg.text}</p>}
                 <span className="block text-xs text-gray-400 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatTime(msg.created_at)}
                 </span>
               </div>
             </div>
@@ -297,6 +314,7 @@ function ChatContainer() {
     </div>
   );
 }
+
 
 function NoChatSelected() {
   return (

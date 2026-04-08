@@ -1,4 +1,6 @@
 import pool from "../lib/database.js";
+import { getReceiverSocketId } from "../lib/socket.js";
+import { io } from "../lib/socket.js";
 
 // Sidebar — only users with chat history
 export const getUsersForSidebar = async (req, res) => {
@@ -90,19 +92,20 @@ export const getMessages = async (req, res) => {
 
     const [rows] = await pool.query(
       `
-            SELECT 
-                m.id, 
-                m.text, 
-                m.image,
-                m.is_read,
-                m.created_at, 
-                (CASE WHEN m.sender_id = ? THEN 'me' ELSE 'them' END) AS sender
-            FROM messages m
-            WHERE (m.sender_id = ? AND m.receiver_id = ?) 
-               OR (m.sender_id = ? AND m.receiver_id = ?)
-            ORDER BY m.created_at ASC
+           SELECT 
+    m.id, 
+    m.text, 
+    m.image,
+    m.is_read,
+    m.created_at,
+    m.sender_id,      -- ✅ return actual sender_id
+    m.receiver_id
+FROM messages m
+WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+   OR (m.sender_id = ? AND m.receiver_id = ?)
+ORDER BY m.created_at ASC
         `,
-      [myId, myId, userToChatId, userToChatId, myId],
+      [myId, userToChatId, userToChatId, myId],
     );
 
     // Mark messages as read
@@ -140,10 +143,22 @@ export const sendMessage = async (req, res) => {
       [text || null, image || null, sender_id, receiver_id],
     );
 
-    res.status(201).json({
-      message: "Message sent successfully",
-      messageId: result.insertId,
-    });
+    const newMessage = {
+      id: result.insertId,
+      text,
+      image: image || null,
+      sender_id,
+      receiver_id,
+      created_at: new Date(),
+    };
+
+    //todo: Real time ffunctionality for chat using socket.io
+    const receiverSocketId = getReceiverSocketId(receiver_id);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
+    res.status(201).json(newMessage);
   } catch (error) {
     console.error("Failed to send message:", error);
     res.status(500).json({ error: "Failed to send message" });

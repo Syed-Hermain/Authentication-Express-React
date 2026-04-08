@@ -4,8 +4,9 @@ import noteRoutes from './routes/notes.js';
 import userRoutes from './routes/users.js';
 import cookieParser from 'cookie-parser';
 import messageRoutes from './routes/messages.js';
+import {app, server} from './lib/socket.js';
 
-const app = express();
+
 app.use(cors({ 
     origin: 'http://localhost:5173',
     credentials: true
@@ -23,6 +24,6 @@ app.use('/users', userRoutes);
 
 app.use('/messages', messageRoutes);
 
-app.listen(8000, ()=>{
+server.listen(8000, ()=>{
     console.log("Server is listening");
 })
